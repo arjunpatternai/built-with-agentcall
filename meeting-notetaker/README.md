@@ -47,6 +47,13 @@ use one — Claude Code, Cursor, Gemini CLI… — it can do the whole setup for
 
 ## Setup
 
+<p align="center">
+  <a href="https://youtu.be/wINCodm_af0">
+    <img src="https://img.youtube.com/vi/wINCodm_af0/maxresdefault.jpg" width="70%" alt="Watch: build your own notetaker in under 2 minutes">
+  </a>
+</p>
+<p align="center"><sub>▶ <b><a href="https://youtu.be/wINCodm_af0">Watch the 2-minute setup</a></b> — clone → key → build → run</sub></p>
+
 Two ways in — pick one:
 - 🖥️ **Run it yourself** — the four steps below.
 - 🤖 **Have an AI assistant do it** — on Claude Code, Cursor, Gemini CLI, or similar? [One prompt sets it all up.](#build-it-with-one-prompt)
