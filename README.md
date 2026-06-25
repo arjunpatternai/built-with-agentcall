@@ -1,2 +1,51 @@
-# built-with-agentcall
-A collection of real-world use cases built with agentcall.dev — each folder is a self-contained, working example. By Pattern AI Labs.
+# Built with AgentCall
+
+Real, working things people build on **[AgentCall](https://agentcall.dev)** — the API that gives an AI
+agent a real seat in a live meeting: it listens (live transcripts), speaks, shows an on-camera tile, and
+shares its screen — the same way across Google Meet, Zoom, and Teams.
+
+Every project here is a **self-contained folder** you can clone, run, and build on.
+
+> **Built something on AgentCall?** [Add it →](CONTRIBUTING.md)
+
+## Projects
+
+| Project | What it does | Stack |
+|---|---|---|
+| **[meeting-notetaker](meeting-notetaker)** | A silent bot that joins your call, writes the whole transcript live, and leaves when everyone else does. | Python · Node |
+
+*More coming — yours could be next.*
+
+## Run one
+
+Clone the whole repo:
+
+```bash
+git clone https://github.com/pattern-ai-labs/built-with-agentcall
+cd built-with-agentcall/folder-name
+```
+
+…or grab just one folder:
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/pattern-ai-labs/built-with-agentcall
+cd built-with-agentcall && git sparse-checkout set folder-name
+```
+
+Each folder has its own `README.md` with setup steps.
+
+## Contribute
+
+Fork this repo, add your project as a new top-level folder (with its own `README.md`), and open a pull
+request. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the conventions — one folder per project,
+kebab-case name, no committed secrets.
+
+## About AgentCall
+
+[AgentCall](https://agentcall.dev) is the meeting layer under all of this — one API to put an AI agent
+into a call with voice, an on-camera presence, screen-share, and real-time transcription, identically on
+Meet, Zoom, and Teams. These projects are what you build on top of it.
+
+---
+
+MIT — see [LICENSE](LICENSE). By [Pattern AI Labs](https://agentcall.dev).
