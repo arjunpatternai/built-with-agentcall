@@ -47,7 +47,7 @@ use one — Claude Code, Cursor, Gemini CLI… — it can do the whole setup for
 
 ## Setup
 
-<p align="center">
+<p align="left">
   <a href="https://youtu.be/wINCodm_af0">
     <img src="https://img.youtube.com/vi/wINCodm_af0/maxresdefault.jpg" width="70%" alt="Watch: build your own notetaker in under 2 minutes">
   </a>
