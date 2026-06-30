@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presenter</title>
+<!--
+  The bot's CAMERA tile in SCREENSHARE mode: a small "presenter face" + the narration voice.
+  AgentCall routes the bot's TTS audio to THIS page (the --ui-port page), so the audio player AND the
+  "hush" (instant pause/nav/leave/question cut) live here — the deck itself is on the screenshare surface
+  (slides.html). Both pages read the same /state.json. In avatar-tile mode this page is not used at all.
+-->
+<style>
+  :root{ --ink:#0b0f14; --lime:#c8ff3a; --fg:#e8edf2; --dim:#8a95a3; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background: radial-gradient(1200px 700px at 50% 32%, #16202b 0%, var(--ink) 72%);
+    color:var(--fg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .wrap{ text-align:center; padding:4vmin; }
+  .disc{
+    width:38vmin; height:38vmin; max-width:280px; max-height:280px; border-radius:50%;
+    margin:0 auto 5vmin; position:relative; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(160deg, #1c2836, #0e141c);
+    box-shadow: 0 0 0 1px rgba(200,255,58,.18), 0 24px 70px rgba(0,0,0,.55);
+  }
+  .mono{ font-size:16vmin; font-weight:800; color:var(--lime); line-height:1; }
+  .ring{ position:absolute; inset:-6%; border-radius:50%; border:2px solid rgba(200,255,58,.55); opacity:0; }
+  body.speaking .ring{ animation:pulse 1.5s ease-out infinite; }
+  body.speaking .ring.b{ animation-delay:.75s; }
+  @keyframes pulse{ from{ transform:scale(.9); opacity:.6 } to{ transform:scale(1.2); opacity:0 } }
+  .name{ font-size:5.4vmin; font-weight:700; letter-spacing:.2px; }
+  .status{ margin-top:2.6vmin; font-size:3vmin; color:var(--dim); display:inline-flex; align-items:center; gap:1.3vmin; }
+  .dot{ width:1.6vmin; height:1.6vmin; border-radius:50%; background:var(--dim); transition:background .2s; }
+  body.live .dot{ background:var(--lime); box-shadow:0 0 12px var(--lime); }
+  .ctx{ margin-top:3.6vmin; font-size:2.5vmin; color:var(--dim); max-width:84vw; }
+  .ctx b{ color:var(--fg); font-weight:600; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="disc"><div class="ring"></div><div class="ring b"></div><div class="mono" id="mono">P</div></div>
+    <div class="name" id="name">Presenter</div>
+    <div class="status"><span class="dot"></span><span id="statusText">joining…</span></div>
+    <div class="ctx" id="ctx"></div>
+  </div>
+
+<script src="agentcall-audio.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+let player = null, lastHush = 0, hushTimer = null, lastKey = "";
+
+function esc(t){ return (t||"").replace(/</g,"&lt;"); }
+
+function render(s){
+  const bot = s.bot || "Presenter";
+  const speaking = !!s.speaking, status = s.status || "idle", live = status === "presenting";
+  const key = bot + "|" + status + "|" + speaking + "|" + (s.slide||0) + "|" + (s.deckTitle||"") + "|" + (s.total||0);
+  if(key === lastKey) return;
+  lastKey = key;
+  document.getElementById("name").textContent = bot;
+  document.getElementById("mono").textContent = (bot.trim()[0] || "P").toUpperCase();
+  document.body.classList.toggle("speaking", speaking && live);
+  document.body.classList.toggle("live", live);
+  let label = "Standby";
+  if(status === "leaving") label = "Leaving…";
+  else if(speaking && live) label = "Speaking";
+  else if(live) label = "Presenting";
+  else if(status === "idle") label = "Ready";
+  document.getElementById("statusText").textContent = label;
+  const total = s.total || 0;
+  document.getElementById("ctx").innerHTML = (live && total)
+    ? `<b>${esc(s.deckTitle)}</b> · slide ${(s.slide||0)+1} of ${total}`
+    : (s.deckTitle ? `<b>${esc(s.deckTitle)}</b>` : "");
+}
+
+async function poll(){
+  if(location.protocol === "file:") return;
+  try{
+    const r = await fetch("state.json",{cache:"no-store"});
+    if(!r.ok) return;
+    const s = await r.json();
+    // Pause / manual nav / leave / a question bumps hush — cut the bot's current speech NOW.
+    // (Same mechanism barge-in uses; the next narration re-opens the gate via tts.started. The 30s timer
+    // is a safety so a missed tts.started can never leave the bot muted forever.)
+    if(player && typeof s.hush === "number" && s.hush !== lastHush){
+      lastHush = s.hush;
+      try{ player.clear(); player.interrupted = true;
+        if(hushTimer) clearTimeout(hushTimer);
+        hushTimer = setTimeout(()=>{ if(player) player.interrupted = false; }, 30000);
+      }catch(_){}
+    }
+    render(s);
+  }catch(_){}
+}
+poll(); setInterval(poll, 150);
+
+// The narration audio is delivered to THIS camera page (screenshare mode); play it here so the meeting hears it.
+const wsURL = params.get("ws");
+if(wsURL && wsURL!=="local" && typeof AgentCallAudio!=="undefined"){
+  player = new AgentCallAudio({});
+  try{ const sock=new WebSocket(wsURL); sock.onmessage=(e)=>{ try{player.handleEvent(JSON.parse(e.data));}catch(_){} }; }catch(_){}
+}
+</script>
+</body>
+</html>
